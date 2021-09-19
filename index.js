@@ -58,13 +58,15 @@ class ObjectStorageClient {
         }.bind(this));
     }
 
-    async delete(file_name) {
+    delete(file_name) {
         if (!this.test_filename.test(file_name)) {
             return "Error: bad file name";
         }
-
-        const response = await request.delete(this.url + "/" + file_name);
-        return response;
+        return new Promise(function (resolve, reject) {
+            request.delete(this.url + "/" + file_name, function(err, res, body){
+                resolve(body);
+            });
+        }.bind(this))
     }
 }
 
