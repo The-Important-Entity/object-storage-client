@@ -97,7 +97,7 @@ const run_tests = async function() {
     assert(await deleteFile(), "Success!");
     assert(await getFile(), "Error: object doesn't exist");
     assert(await deleteNamespace(), "Success!");
-
+    assert(await getFile(), "Error: namespace doesn't exist");
 
 
     console.log();
@@ -105,9 +105,4 @@ const run_tests = async function() {
     console.log("Tests Failed: " + failed.toString());
 
 }
-//run_tests();
-
-putFile();
-getFile().then(function(res) {
-    console.log(res)
-})
+run_tests();
