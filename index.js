@@ -1,6 +1,7 @@
 const path = require("path");
 var request = require('request');
 var fs = require('fs');
+var json = require("json");
 
 class ObjectStorageClient {
     constructor(config) {
@@ -13,33 +14,68 @@ class ObjectStorageClient {
         }
     }
 
-    async get(file_name, download_path) {
-        const r = request.get(this.url + "/" + file_name);
-
-        if (!this.test_filename.test(file_name)) {
-            return "Error: bad file name";
-        }
-
-        // verify response code
-        r.on('response', (response) => {
-            if (response.statusCode !== 200) {
-                console.log("Error: get file");
-                return;
+    async getNamespaceFiles(namespace) {
+        return new Promise(function (resolve, reject) {
+            try {
+                request.get(this.url + "/" + namespace, function(err, res, body){
+                    if (res.statusCode == 200){
+                        resolve(JSON.parse(body));
+                    }
+                    else {
+                        resolve(body);
+                    }
+                    reject(err);
+                });
             }
-            var file = fs.createWriteStream(path.join(download_path, file_name));
+            catch {
 
-            // close() is async, call cb after close completes
-            file.on('finish', function(err, res ,body){
-                file.close();
-            });
-            r.pipe(file);
-        });
+            }
+        }.bind(this));
     }
 
-    put(file_name, file_path) {
-        if (!this.test_filename.test(file_name)) {
-            return "Error: bad file name";
-        }
+    async putNamespace(namespace) {
+        return new Promise(function (resolve, reject) {
+            request.put(this.url + "/" + namespace, function(err, res, body){
+                resolve(body);
+                reject(err);
+            });
+        }.bind(this));
+    }
+
+    async deleteNamespace(namespace) {
+        return new Promise(function (resolve, reject) {
+            request.delete(this.url + "/" + namespace, function(err, res, body){
+                resolve(body);
+            });
+        }.bind(this));
+    }
+
+    async getObject(namespace, file_name, download_path) {
+        return new Promise(function (resolve, reject) {
+            const r = request.get(this.url + "/" + namespace + "/" + file_name, function(err, res, body){
+                if (res.statusCode == 400) {
+                    resolve(body);
+                }
+            });
+    
+            
+    
+            // verify response code
+            r.on('response', (response) => {
+                var file = fs.createWriteStream(path.join(download_path, file_name));
+    
+                // close() is async, call cb after close completes
+                file.on('finish', function(err, res ,body){
+                    file.close();
+                    resolve("Success!");
+                });
+                r.pipe(file);
+            });
+        }.bind(this));
+    }
+
+    putObject(namespace, file_name, file_path) {
+        
 
         const stream = fs.createReadStream(file_path);
         const options = {
@@ -52,18 +88,16 @@ class ObjectStorageClient {
         };
 
         return new Promise(function (resolve, reject) {
-            var r = request.put(this.url + "/" + file_name, options, function(err, res, body){
+            var r = request.put(this.url + "/" + namespace + "/" + file_name, options, function(err, res, body){
                 resolve(body);
             });
         }.bind(this));
     }
 
-    delete(file_name) {
-        if (!this.test_filename.test(file_name)) {
-            return "Error: bad file name";
-        }
+    deleteObject(namespace, file_name) {
+        
         return new Promise(function (resolve, reject) {
-            request.delete(this.url + "/" + file_name, function(err, res, body){
+            request.delete(this.url + "/" + namespace + "/" + file_name, function(err, res, body){
                 resolve(body);
             });
         }.bind(this))
