@@ -11,12 +11,12 @@ function sleep(ms) {
     });
 }
 
-const run_lock_test = async function(){
+const run_lock_test = async function(file_path){
     var iteration = 0;
     while(true) {
         responses = new Array(20);
         for (var i = 0; i < 20; i++) {
-            responses[i] = client.put("NewProject.mp4", "C:\\Users\\Joe\\Downloads\\NewProject.mp4");
+            responses[i] = client.put("test.txt", file_path);
         }
         for (var i = 0; i < 20; i++) {
             const thisResponse = await responses[i];
@@ -26,7 +26,7 @@ const run_lock_test = async function(){
         }
         iteration++;
         await sleep(10000);
-        await client.delete("NewProject.mp4")
+        await client.delete("test.txt")
     }
 }
 var counter = 1;
@@ -59,45 +59,45 @@ const deleteNamespace = async function(){
     return await client.deleteNamespace("joe-namespace");
 }
 
-const getFile = async function(){
-    return await client.getObject("joe-namespace", "NewProject.mp4", 'C:\\Users\\Joe\\Desktop\\Code\\object-storage-client\\data');
+const getFile = async function(download_path){
+    return await client.getObject("joe-namespace", "test.txt", download_path);
 }
 
-const putFile = async function(){
-    return client.putObject("joe-namespace", "NewProject.mp4", "C:\\Users\\Joe\\Downloads\\NewProject.mp4");
+const putFile = async function(file_path){
+    return client.putObject("joe-namespace", "test.txt", file_path);
 }
 
 const deleteFile = async function(){
-    return await client.deleteObject("joe-namespace", "NewProject.mp4");
+    return await client.deleteObject("joe-namespace", "test.txt");
 }
 
-const run_tests = async function() {
+const run_tests = async function(file_path, download_path) {
     await deleteFile();
     await deleteNamespace();
 
     assert(await getNamespaceFiles(), "Error: namespace doesn't exist");
     assert(await deleteNamespace(), "Error: namespace doesn't exist");
-    assert(await putFile(), "Error: namespace doesn't exist");
-    assert(await getFile(), "Error: namespace doesn't exist");
+    assert(await putFile(file_path), "Error: namespace doesn't exist");
+    assert(await getFile(download_path), "Error: namespace doesn't exist");
     assert(await deleteFile(), "Error: namespace doesn't exist");
 
     assert(await putNamespace(), "Success!");
     assert(await putNamespace(), "Error: namespace already exists");
     assert((await getNamespaceFiles()).length, 0);
 
-    assert(await getFile(), "Error: object doesn't exist");
+    assert(await getFile(download_path), "Error: object doesn't exist");
     assert(await deleteFile(), "Error: object doesn't exist");
 
-    assert(await putFile(), "Success!");
-    assert(await getFile(), "Success!");
+    assert(await putFile(file_path), "Success!");
+    assert(await getFile(download_path), "Success!");
     assert((await getNamespaceFiles()).length, 1);
-    assert((await getNamespaceFiles())[0], "NewProject.mp4");
+    assert((await getNamespaceFiles())[0], "test.txt");
 
     assert(await deleteNamespace(), "Error: namespace is not empty");
     assert(await deleteFile(), "Success!");
-    assert(await getFile(), "Error: object doesn't exist");
+    assert(await getFile(download_path), "Error: object doesn't exist");
     assert(await deleteNamespace(), "Success!");
-    assert(await getFile(), "Error: namespace doesn't exist");
+    assert(await getFile(download_path), "Error: namespace doesn't exist");
 
 
     console.log();
@@ -105,4 +105,4 @@ const run_tests = async function() {
     console.log("Tests Failed: " + failed.toString());
 
 }
-run_tests();
+run_tests("/home/jscalera/test.txt", "/home/jscalera");
