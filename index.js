@@ -18,13 +18,16 @@ class ObjectStorageClient {
         return new Promise(function (resolve, reject) {
             try {
                 request.get(this.url + "/" + namespace, function(err, res, body){
+                    if (err) {
+                        reject(err);
+                        return;
+                    }
                     if (res.statusCode == 200){
                         resolve(JSON.parse(body));
                     }
                     else {
                         resolve(body);
                     }
-                    reject(err);
                 });
             }
             catch {
