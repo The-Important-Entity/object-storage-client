@@ -72,8 +72,8 @@ const deleteFile = async function(){
 }
 
 const run_tests = async function(file_path, download_path) {
-    await deleteFile();
-    await deleteNamespace();
+    console.log(await deleteFile());
+    console.log(await deleteNamespace());
 
     assert(await getNamespaceFiles(), "Error: namespace doesn't exist");
     assert(await deleteNamespace(), "Error: namespace doesn't exist");
@@ -105,4 +105,17 @@ const run_tests = async function(file_path, download_path) {
     console.log("Tests Failed: " + failed.toString());
 
 }
-run_tests("/home/jscalera/test.txt", "/home/jscalera");
+run_tests("/home/jscalera/dump.txt", "/home/jscalera");
+// putNamespace();
+// const test1 = async function(){
+//     await putNamespace();
+//     console.log(await putFile("/home/jscalera/test.txt"));
+//     console.log(await getFile("/home/jscalera/temp"));
+// }
+// test1();
+//putNamespace();
+
+
+// getFile("/home/jscalera/temp").then(function(Res){
+//     console.log(Res);
+// })

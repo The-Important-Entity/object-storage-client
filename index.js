@@ -58,6 +58,7 @@ class ObjectStorageClient {
             const r = request.get(this.url + "/" + namespace + "/" + file_name, function(err, res, body){
                 if (res.statusCode == 400) {
                     resolve(body);
+                    return;
                 }
             });
     
@@ -65,14 +66,17 @@ class ObjectStorageClient {
     
             // verify response code
             r.on('response', (response) => {
-                var file = fs.createWriteStream(path.join(download_path, file_name));
-    
-                // close() is async, call cb after close completes
-                file.on('finish', function(err, res ,body){
-                    file.close();
-                    resolve("Success!");
-                });
-                r.pipe(file);
+                if (response.statusCode < 400) {
+                    var file = fs.createWriteStream(path.join(download_path, file_name));
+        
+                    // close() is async, call cb after close completes
+                    file.on('finish', function(err, res ,body){
+                        file.close();
+                        resolve("Success!");
+                    });
+                    
+                    r.pipe(file);
+                }
             });
         }.bind(this));
     }
@@ -92,7 +96,12 @@ class ObjectStorageClient {
 
         return new Promise(function (resolve, reject) {
             var r = request.put(this.url + "/" + namespace + "/" + file_name, options, function(err, res, body){
-                resolve(body);
+                if (err){
+                    resolve(err);
+                }
+                else {
+                    resolve(body);
+                }
             });
         }.bind(this));
     }
