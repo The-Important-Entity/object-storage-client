@@ -3,11 +3,12 @@ var request = require('request');
 const axios = require('axios');
 var fs = require('fs');
 const FormData = require('form-data');
-
+const crypto = require("crypto");
 
 class ObjectStorageClient {
     constructor(config) {
-        this.api_key = config.API_KEY;
+        this.app_id = config.APP_ID
+        this.secret_key = config.SECRET_KEY;
         this.url = config.URL;
         this.test_filename = new RegExp('^[A-Za-z0-9]+[A-Za-z0-9.-]+[A-Za-z0-9]+$');
         this.test_url = new RegExp('^(http|https):\/\/[0-0a-z.]*(:[0-9]*){0,1}$');
@@ -17,14 +18,38 @@ class ObjectStorageClient {
         }
     }
 
+    gen_nonce() {
+        var result = ''
+        var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+
+        for (var i = 0; i < 20; i++) {
+            result += characters.charAt(Math.floor(Math.random() * characters.length));
+        }
+        return result;
+    }
+
+    gen_sha256_hmac(method, uri, date, nonce) {
+        const str = method + '\n' + uri + '\n' + date + '\n' + nonce + '\n' + this.app_id
+        return this.app_id + ":" + crypto.createHmac('sha256', this.secret_key).update(str).digest('hex');
+    }
+
     async getNamespaceFiles(namespace) {
+        const date = Date.now().toString();
+        const nonce = this.gen_nonce();
+        const method = "GET";
+        const uri = "/" + namespace;
+
+        const auth_string = this.gen_sha256_hmac(method, uri, date, nonce);
+        const req_headers = {
+            "authorization": auth_string,
+            "date": date,
+            "nonce": nonce
+        }
         return new Promise(function (resolve, reject) {
             axios({
-                url: this.url + "/" + namespace,
+                url: this.url + uri,
                 method: "GET",
-                headers: {
-                    "authorization": this.api_key
-                }
+                headers: req_headers
             }).then(function(response) {
                 resolve(response.data);
             }).catch(function(err) {
@@ -35,13 +60,22 @@ class ObjectStorageClient {
     }
 
     async putNamespace(namespace) {
+        const date = Date.now().toString();
+        const nonce = this.gen_nonce();
+        const method = "PUT";
+        const uri = "/" + namespace;
+
+        const auth_string = this.gen_sha256_hmac(method, uri, date, nonce);
+        const req_headers = {
+            "authorization": auth_string,
+            "date": date,
+            "nonce": nonce
+        }
         return new Promise(function (resolve, reject) {
             axios({
-                url: this.url + "/" + namespace,
+                url: this.url + uri,
                 method: "PUT",
-                headers: {
-                    "authorization": this.api_key
-                }
+                headers: req_headers
             }).then(function(response) {
                 resolve(response.data);
             }).catch(function(err) {
@@ -52,13 +86,22 @@ class ObjectStorageClient {
     }
 
     async deleteNamespace(namespace) {
+        const date = Date.now().toString();
+        const nonce = this.gen_nonce();
+        const method = "DELETE";
+        const uri = "/" + namespace;
+
+        const auth_string = this.gen_sha256_hmac(method, uri, date, nonce);
+        const req_headers = {
+            "authorization": auth_string,
+            "date": date,
+            "nonce": nonce
+        }
         return new Promise(function (resolve, reject) {
             axios({
-                url: this.url + "/" + namespace,
+                url: this.url + uri,
                 method: "DELETE",
-                headers: {
-                    "authorization": this.api_key
-                }
+                headers: req_headers
             }).then(function(response) {
                 resolve(response.data);
             }).catch(function(err) {
@@ -68,16 +111,24 @@ class ObjectStorageClient {
     }
 
     async getObject(namespace, file_name, download_path) {
+        const date = Date.now().toString();
+        const nonce = this.gen_nonce();
+        const method = "GET";
+        const uri = "/" + namespace + "/" + file_name;
 
+        const auth_string = this.gen_sha256_hmac(method, uri, date, nonce);
+        const req_headers = {
+            "authorization": auth_string,
+            "date": date,
+            "nonce": nonce
+        }
         return new Promise(async function (resolve, reject) {
 
 
             axios({
-                url: this.url + "/" + namespace + "/" + file_name,
+                url: this.url + uri,
                 method: "GET",
-                headers: {
-                    "authorization": this.api_key
-                },
+                headers: req_headers,
                 responseType: 'stream'
             }).then(function(response){
                 var file = fs.createWriteStream(path.join(download_path, file_name));
@@ -111,20 +162,32 @@ class ObjectStorageClient {
     }
 
     putObject(namespace, file_name, file_path) {
-
+        
         const formData = new FormData();
         formData.append('file', fs.createReadStream(file_path));
+
+        const date = Date.now().toString();
+        const nonce = this.gen_nonce();
+        const method = "PUT";
+        const uri = "/" + namespace + "/" + file_name;
+
+        const auth_string = this.gen_sha256_hmac(method, uri, date, nonce);
+        const req_headers = {
+            "authorization": auth_string,
+            "date": date,
+            "nonce": nonce,
+            "content-type": formData.getHeaders()['content-type']
+        }
+
+
         return new Promise(function (resolve, reject) {
             axios({
-                url: this.url + "/" + namespace + "/" + file_name,
+                url: this.url + uri,
                 method: "PUT",
                 maxContentLength: Infinity,
                 maxBodyLength: Infinity,
                 data: formData,
-                headers: {
-                    "content-type": formData.getHeaders()['content-type'],
-                    "authorization": this.api_key
-                }
+                headers: req_headers
             }).then(function(response) {
                 resolve(response.data);
             }).catch(function(err) {
@@ -134,13 +197,22 @@ class ObjectStorageClient {
     }
 
     deleteObject(namespace, file_name) {
+        const date = Date.now().toString();
+        const nonce = this.gen_nonce();
+        const method = "DELETE";
+        const uri = "/" + namespace + "/" + file_name;
+
+        const auth_string = this.gen_sha256_hmac(method, uri, date, nonce);
+        const req_headers = {
+            "authorization": auth_string,
+            "date": date,
+            "nonce": nonce
+        }
         return new Promise(function (resolve, reject) {
             axios({
-                url: this.url + "/" + namespace + "/" + file_name,
+                url: this.url + uri,
                 method: "DELETE",
-                headers: {
-                    "authorization": this.api_key
-                }
+                headers: req_headers
             }).then(function(response) {
                 resolve(response.data);
             }).catch(function(err) {
