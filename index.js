@@ -1,7 +1,9 @@
 const path = require("path");
 var request = require('request');
+const axios = require('axios');
 var fs = require('fs');
-var json = require("json");
+const FormData = require('form-data');
+
 
 class ObjectStorageClient {
     constructor(config) {
@@ -111,26 +113,20 @@ class ObjectStorageClient {
 
     putObject(namespace, file_name, file_path) {
 
-
-        const stream = fs.createReadStream(file_path);
-        const options = {
-            headers: {
-                "Content-Type": "multipart/form-data",
-                "authorization": this.api_key
-            },
-            formData : {
-                "file" : stream
-            }
-        };
-
+        const formData = new FormData();
+        formData.append('file', fs.createReadStream(file_path));
         return new Promise(function (resolve, reject) {
-            var r = request.put(this.url + "/" + namespace + "/" + file_name, options, function(err, res, body){
-                if (err){
-                    resolve(err);
+            axios.put(this.url + "/" + namespace + "/" + file_name, formData, {
+                maxContentLength: Infinity,
+                maxBodyLength: Infinity,
+                headers: {
+                    "content-type": formData.getHeaders()['content-type'],
+                    "authorization": this.api_key
                 }
-                else {
-                    resolve(body);
-                }
+            }).then(function(response) {
+                resolve(response.data);
+            }).catch(function(err) {
+                resolve(err.response.data);
             });
         }.bind(this));
     }
