@@ -15,9 +15,16 @@ class ObjectStorageClient {
     }
 
     async getNamespaceFiles(namespace) {
+        const headers = {
+            "Authorization": this.api_key
+        };
+        const options = {
+            "url": this.url + "/" + namespace,
+            "headers": headers
+        }
         return new Promise(function (resolve, reject) {
             try {
-                request.get(this.url + "/" + namespace, function(err, res, body){
+                request.get(options, function(err, res, body){
                     if (err) {
                         reject(err);
                         return;
@@ -37,8 +44,15 @@ class ObjectStorageClient {
     }
 
     async putNamespace(namespace) {
+        const headers = {
+            "Authorization": this.api_key
+        };
+        const options = {
+            "url": this.url + "/" + namespace,
+            "headers": headers
+        }
         return new Promise(function (resolve, reject) {
-            request.put(this.url + "/" + namespace, function(err, res, body){
+            request.put(options, function(err, res, body){
                 resolve(body);
                 reject(err);
             });
@@ -46,16 +60,30 @@ class ObjectStorageClient {
     }
 
     async deleteNamespace(namespace) {
+        const headers = {
+            "Authorization": this.api_key
+        };
+        const options = {
+            "url": this.url + "/" + namespace,
+            "headers": headers
+        }
         return new Promise(function (resolve, reject) {
-            request.delete(this.url + "/" + namespace, function(err, res, body){
+            request.delete(options, function(err, res, body){
                 resolve(body);
             });
         }.bind(this));
     }
 
     async getObject(namespace, file_name, download_path) {
+        const headers = {
+            "Authorization": this.api_key
+        };
+        const options = {
+            "url": this.url + "/" + namespace + "/" + file_name,
+            "headers": headers
+        }
         return new Promise(function (resolve, reject) {
-            const r = request.get(this.url + "/" + namespace + "/" + file_name, function(err, res, body){
+            const r = request.get(options, function(err, res, body){
                 if (res.statusCode == 400) {
                     resolve(body);
                     return;
@@ -82,12 +110,13 @@ class ObjectStorageClient {
     }
 
     putObject(namespace, file_name, file_path) {
-        
+
 
         const stream = fs.createReadStream(file_path);
         const options = {
             headers: {
-                "Content-Type": "multipart/form-data"
+                "Content-Type": "multipart/form-data",
+                "Authorization": this.api_key
             },
             formData : {
                 "file" : stream
@@ -107,9 +136,15 @@ class ObjectStorageClient {
     }
 
     deleteObject(namespace, file_name) {
-        
+        const headers = {
+            "Authorization": this.api_key
+        };
+        const options = {
+            "url": this.url + "/" + namespace + "/" + file_name,
+            "headers": headers
+        }
         return new Promise(function (resolve, reject) {
-            request.delete(this.url + "/" + namespace + "/" + file_name, function(err, res, body){
+            request.delete(options, function(err, res, body){
                 resolve(body);
             });
         }.bind(this))
