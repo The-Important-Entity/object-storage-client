@@ -16,7 +16,7 @@ class ObjectStorageClient {
 
     async getNamespaceFiles(namespace) {
         const headers = {
-            "Authorization": this.api_key
+            "authorization": this.api_key
         };
         const options = {
             "url": this.url + "/" + namespace,
@@ -45,7 +45,7 @@ class ObjectStorageClient {
 
     async putNamespace(namespace) {
         const headers = {
-            "Authorization": this.api_key
+            "authorization": this.api_key
         };
         const options = {
             "url": this.url + "/" + namespace,
@@ -61,7 +61,7 @@ class ObjectStorageClient {
 
     async deleteNamespace(namespace) {
         const headers = {
-            "Authorization": this.api_key
+            "authorization": this.api_key
         };
         const options = {
             "url": this.url + "/" + namespace,
@@ -76,7 +76,7 @@ class ObjectStorageClient {
 
     async getObject(namespace, file_name, download_path) {
         const headers = {
-            "Authorization": this.api_key
+            "authorization": this.api_key
         };
         const options = {
             "url": this.url + "/" + namespace + "/" + file_name,
@@ -116,7 +116,7 @@ class ObjectStorageClient {
         const options = {
             headers: {
                 "Content-Type": "multipart/form-data",
-                "Authorization": this.api_key
+                "authorization": this.api_key
             },
             formData : {
                 "file" : stream
@@ -137,7 +137,7 @@ class ObjectStorageClient {
 
     deleteObject(namespace, file_name) {
         const headers = {
-            "Authorization": this.api_key
+            "authorization": this.api_key
         };
         const options = {
             "url": this.url + "/" + namespace + "/" + file_name,
