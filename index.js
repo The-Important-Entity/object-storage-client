@@ -11,7 +11,7 @@ class ObjectStorageClient {
         this.secret_key = config.SECRET_KEY;
         this.url = config.URL;
         this.test_filename = new RegExp('^[A-Za-z0-9]+[A-Za-z0-9.-]+[A-Za-z0-9]+$');
-        this.test_url = new RegExp('^(http|https):\/\/[0-0a-z.]*(:[0-9]*){0,1}$');
+        this.test_url = new RegExp('^(http|https):\/\/[0-9a-z.]*(:[0-9]*){0,1}$');
 
         if (!this.test_url.test(this.url)){
             throw("Error: bad url format. " + this.url);
